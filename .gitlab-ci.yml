@@ -1,25 +1,17 @@
-# This file is a template, and might need editing before it works on your project.
-# Official framework image. Look for the different tagged releases at:
-# https://hub.docker.com/r/library/node/tags/
 image: node:latest
 
-# This folder is cached between builds
-# http://docs.gitlab.com/ce/ci/yaml/README.html#cache
-cache:
-  paths:
-  - node_modules/
+stages:
+  - test
+  - staging
 
-test:
-  stage: test
+staging:
+  type: deploy
+  stage: staging
+  image: ruby:latest
   script:
-    - npm install
-    - npm test
-
-pack:
-  stage: deploy
-  script:
-    - npm install
-    - npm pack
-  artifacts:
-    paths:
-    - ./*.tgz
+    - apt-get update -qy
+    - apt-get install -y ruby-dev
+    - gem install dpl
+    - dpl --provider=heroku --app=$HEROKU_PRODUCTION_APP_NAME --api-key=$HEROKU_PRODUCTION_API_KEY
+  only:
+    - master
